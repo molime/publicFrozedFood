@@ -1,0 +1,179 @@
+{
+  "project_info": {
+    "project_number": "260535334726",
+    "firebase_url": "https://restaurantes-223b1.firebaseio.com",
+    "project_id": "restaurantes-223b1",
+    "storage_bucket": "restaurantes-223b1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260535334726:android:08e9a961112ef2af7c5747",
+        "android_client_info": {
+          "package_name": "com.mosifin.tic_tac_delivery_boy"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbGWP9tsh6SVydsK-bLJek2LKqn8W5P3g"
+        },
+        {
+          "current_key": "AIzaSyBrE5gHA5N24Yau6MMrt-08X9y_wbjxdHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260535334726:android:c2397647566af0fb7c5747",
+        "android_client_info": {
+          "package_name": "com.mosifin.tictac_client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260535334726-ipcl7echjau3rh2oul77e4g0mjj2kdja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mosifin.tictac_client",
+            "certificate_hash": "8505bd5cf8f1893451ac0513581d2115c1ac0618"
+          }
+        },
+        {
+          "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbGWP9tsh6SVydsK-bLJek2LKqn8W5P3g"
+        },
+        {
+          "current_key": "AIzaSyBrE5gHA5N24Yau6MMrt-08X9y_wbjxdHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260535334726:android:c220714263ac890d7c5747",
+        "android_client_info": {
+          "package_name": "com.mositech.tictacshop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbGWP9tsh6SVydsK-bLJek2LKqn8W5P3g"
+        },
+        {
+          "current_key": "AIzaSyBrE5gHA5N24Yau6MMrt-08X9y_wbjxdHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260535334726:android:ae0c1ac8005bdc957c5747",
+        "android_client_info": {
+          "package_name": "com.tictacdelivery.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbGWP9tsh6SVydsK-bLJek2LKqn8W5P3g"
+        },
+        {
+          "current_key": "AIzaSyBrE5gHA5N24Yau6MMrt-08X9y_wbjxdHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260535334726:android:d6ceb37a17151c527c5747",
+        "android_client_info": {
+          "package_name": "com.tictacdelivery.store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbGWP9tsh6SVydsK-bLJek2LKqn8W5P3g"
+        },
+        {
+          "current_key": "AIzaSyBrE5gHA5N24Yau6MMrt-08X9y_wbjxdHc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "260535334726-93vpe54kmoiul0af5ks9qj75bnab683o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
