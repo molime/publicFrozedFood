@@ -141,6 +141,83 @@ class Order {
     return order;
   }
 
+  factory Order.fromMap({Map map}) {
+    print({
+      "dailyTotalAmount.type": map['dailyTotalAmount'].runtimeType,
+    });
+    Order order = Order(
+      uid: map['id'] != null ? map['id'] : null,
+      addressID: map['addressID'] != null ? map['addressID'] : null,
+      deliveryDate:
+          map['deliveryDate'] != null ? map['deliveryDate'].toDate() : null,
+      isSuccess: map['isSuccess'] != null ? map['isSuccess'] : false,
+      delivered: map['delivered'] != null ? map['delivered'] : false,
+      sent: map['sent'] != null ? map['sent'] : false,
+      orderBy: map['orderBy'] != null ? map['orderBy'] : null,
+      totalAmount: map['totalAmount'] != null
+          ? double.parse(map['totalAmount'].toString())
+          : null,
+      orderTime: map['orderTime'] != null ? map['orderTime'] : null,
+      paymentDetails:
+          map['paymentDetails'] != null ? map['paymentDetails'] : null,
+      paymentMethod: map['paymentMethod'] != null ? map['paymentMethod'] : null,
+      paymentIntent: map['paymentIntent'] != null ? map['paymentIntent'] : null,
+      addressDetails: map['addressDetails'] != null
+          ? AddressModel.fromJson(
+              map['addressDetails'],
+              uidReceived: map['addressDetails']['uid'],
+            )
+          : null,
+      productIDs: [],
+      products: [],
+      clientOrderUid:
+          map['clientOrderUid'] != null ? map['clientOrderUid'] : null,
+      dailyProductIds: [],
+      dailyProducts: [],
+      dailyOrderUid: map['dailyOrderUid'] != null ? map['dailyOrderUid'] : null,
+      dailyTotalAmount: map['dailyTotalAmount'] != null
+          ? double.parse(map['dailyTotalAmount'].toString())
+          : null,
+      normalTotalAmount: map['normalTotalAmount'] != null
+          ? double.parse(map['normalTotalAmount'].toString())
+          : null,
+    );
+
+    if (map['productIDs'] != null) {
+      for (String prodUid in map['productIDs']) {
+        order.productIDs.add(prodUid);
+      }
+    }
+
+    if (map['dailyProductIds'] != null) {
+      for (String prodUid in map['dailyProductIds']) {
+        order.dailyProductIds.add(prodUid);
+      }
+    }
+
+    if (map['products'] != null) {
+      for (Map product in map['products']) {
+        ItemModel itemModelAdd = ItemModel.fromJson(
+          product,
+          product['uid'],
+        );
+        order.products.add(itemModelAdd);
+      }
+    }
+
+    if (map['dailyProducts'] != null) {
+      for (Map product in map['dailyProducts']) {
+        ItemModel itemModelAdd = ItemModel.fromJson(
+          product,
+          product['uid'],
+        );
+        order.dailyProducts.add(itemModelAdd);
+      }
+    }
+
+    return order;
+  }
+
   int orderNumProducts() {
     int countProducts = 0;
 

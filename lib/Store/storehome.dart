@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:e_shop/Config/constants.dart';
+import 'package:e_shop/Config/push_notification_provider.dart';
 import 'package:e_shop/Data/category_data.dart';
 import 'package:e_shop/Data/shopping_cart.dart';
 import 'package:e_shop/DialogBox/errorDialog.dart';
+import 'package:e_shop/Orders/myOrders.dart';
 import 'package:e_shop/Store/cart.dart';
 import 'package:e_shop/Store/categories_page.dart';
 import 'package:e_shop/Store/daily_menus.dart';
@@ -11,6 +13,7 @@ import 'package:e_shop/Store/product_page.dart';
 import 'package:e_shop/Counters/cartitemcounter.dart';
 import 'package:e_shop/Widgets/categoryItem.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:page_transition/page_transition.dart';
@@ -36,6 +39,7 @@ class _StoreHomeState extends State<StoreHome> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
     _tabController = TabController(length: 2, vsync: this);
     startCategories();
   }

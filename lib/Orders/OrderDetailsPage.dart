@@ -20,6 +20,8 @@ class OrderDetails extends StatelessWidget {
   final String orderId;
   final Order order;
 
+  static const String id = "order_details";
+
   OrderDetails({
     Key key,
     this.orderId,

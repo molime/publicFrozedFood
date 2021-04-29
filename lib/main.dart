@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:e_shop/Config/push_notification_provider.dart';
 import 'package:e_shop/Counters/ItemQuantity.dart';
 import 'package:e_shop/Data/category_data.dart';
 import 'package:e_shop/Data/creditCard_data.dart';
 import 'package:e_shop/Data/shopping_cart.dart';
+import 'package:e_shop/Orders/OrderDetailsPage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Authentication/authenication.dart';
@@ -42,7 +45,26 @@ Future<void> main() async {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    final pushProvider = new PushNotificationsProvider();
+    pushProvider.initNotifications();
+
+    pushProvider.messagesStream.listen((argumento) {
+      print('argumento desde home: $argumento');
+      Fluttertoast.showToast(msg: argumento['message']);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -70,18 +92,26 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         title: 'e-Shop',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: Colors.green,
         ),
-        home: SplashScreen(),
+        routes: {
+          SplashScreen.id: (context) => SplashScreen(),
+          OrderDetails.id: (context) => OrderDetails(),
+        },
+        initialRoute: SplashScreen.id,
+        //home: SplashScreen(),
       ),
     );
   }
 }
 
 class SplashScreen extends StatefulWidget {
+  static const String id = "splash_screen";
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
