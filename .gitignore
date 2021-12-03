@@ -33,6 +33,9 @@
 .pub-cache/
 .pub/
 /build/
+/android/
+/ios/
+/test/
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -86,4 +89,3 @@ app.*.map.json
 !**/ios/**/default.mode2v3
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
-!/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
