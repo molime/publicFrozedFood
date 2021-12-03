@@ -39,10 +39,40 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
   DateTime _dateTimeSelected;
+  List<DateTime> feriados;
   bool showSpinner = false;
 
   Future<void> startCreditCards() async {
     await Provider.of<CreditCardData>(context, listen: false).initCreditCards();
+  }
+
+  Future<void> getFeriados() async {
+    DateTime nowDateFeriados = await NTP.now();
+    DateTime limitFeriados = nowDateFeriados.add(
+      Duration(
+        days: 8,
+      ),
+    );
+    QuerySnapshot listFeriados = await EcommerceApp.firestore
+        .collection(
+          EcommerceApp.collectionFeriados,
+        )
+        .where(
+          'date',
+          isGreaterThanOrEqualTo: nowDateFeriados,
+        )
+        .where(
+          'date',
+          isLessThanOrEqualTo: limitFeriados,
+        )
+        .get();
+    List<DateTime> listDateFeriados = [];
+    for (DocumentSnapshot feriadoIter in listFeriados.docs) {
+      listDateFeriados.add((feriadoIter.data() as Map)['date'].toDate());
+    }
+    setState(() {
+      feriados = listDateFeriados;
+    });
   }
 
   int minutesPlaceOrder({DateTime dateTime}) {
@@ -56,6 +86,7 @@ class _PaymentPageState extends State<PaymentPage> {
     super.initState();
     WidgetsFlutterBinding.ensureInitialized();
     startCreditCards();
+    getFeriados();
   }
 
   @override
@@ -395,48 +426,76 @@ class _PaymentPageState extends State<PaymentPage> {
                     : Container(),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.pink,
+                    primary: feriados != null ? Colors.pink : Colors.grey,
                     onPrimary: Colors.white,
                   ),
                   /*ButtonStyle(
                   foregroundColor: Colors.pink,
                 ),*/
-                  onPressed: () async {
-                    DateTime nowDate = await NTP.now();
-                    DateTime initialDate;
-                    if (nowDate.hour >= 16) {
-                      if (nowDate.hour == 16 && nowDate.minute == 0) {
-                        initialDate = nowDate.add(
-                          Duration(
-                            days: 1,
-                          ),
-                        );
-                      } else {
-                        initialDate = nowDate.add(
-                          Duration(
-                            days: 2,
-                          ),
-                        );
-                      }
-                    } else {
-                      initialDate = nowDate.add(
-                        Duration(days: 1),
-                      );
-                    }
-                    DateTime dateTimePicked = await showDatePicker(
-                      context: context,
-                      initialDate: initialDate,
-                      firstDate: initialDate,
-                      lastDate: nowDate.add(
-                        Duration(
-                          days: 7,
-                        ),
-                      ),
-                    );
-                    setState(() {
-                      _dateTimeSelected = dateTimePicked;
-                    });
-                  },
+                  onPressed: feriados != null
+                      ? () async {
+                          DateTime nowDate = await NTP.now();
+                          DateTime initialDate;
+                          if (nowDate.hour >= 16) {
+                            if (nowDate.hour == 16 && nowDate.minute == 0) {
+                              initialDate = nowDate.add(
+                                Duration(
+                                  days: 1,
+                                ),
+                              );
+                            } else {
+                              initialDate = nowDate.add(
+                                Duration(
+                                  days: 2,
+                                ),
+                              );
+                            }
+                          } else {
+                            initialDate = nowDate.add(
+                              Duration(days: 1),
+                            );
+                          }
+                          DateTime dateTimePicked = await showDatePicker(
+                            context: context,
+                            initialDate: initialDate,
+                            firstDate: initialDate,
+                            lastDate: nowDate.add(
+                              Duration(
+                                days: 7,
+                              ),
+                            ),
+                          );
+                          if (feriados.indexWhere((element) =>
+                                  DateTime(
+                                    element.year,
+                                    element.month,
+                                    element.day,
+                                  ) ==
+                                  DateTime(
+                                    dateTimePicked.year,
+                                    dateTimePicked.month,
+                                    dateTimePicked.day,
+                                  )) <
+                              0) {
+                            setState(() {
+                              _dateTimeSelected = dateTimePicked;
+                            });
+                          } else {
+                            showDialog(
+                              context: context,
+                              builder: (c) {
+                                return ErrorAlertDialog(
+                                  message:
+                                      "No laboramos en la fecha seleccionada, lo sentimos. Por favor seleccione otra fecha para la entrega.",
+                                );
+                              },
+                            );
+                            setState(() {
+                              _dateTimeSelected = null;
+                            });
+                          }
+                        }
+                      : () {},
                   //color: Colors.pink,
                   child: Text(
                     'Seleccionar fecha',

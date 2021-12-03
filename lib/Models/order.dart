@@ -53,73 +53,82 @@ class Order {
     DocumentSnapshot doc,
   }) {
     print({
-      "dailyTotalAmount.type": doc.data()['dailyTotalAmount'].runtimeType,
+      "dailyTotalAmount.type":
+          (doc.data() as Map)['dailyTotalAmount'].runtimeType,
     });
     Order order = Order(
       uid: doc.id != null ? doc.id : null,
-      addressID:
-          doc.data()['addressID'] != null ? doc.data()['addressID'] : null,
-      deliveryDate: doc.data()['deliveryDate'] != null
-          ? doc.data()['deliveryDate'].toDate()
+      addressID: (doc.data() as Map)['addressID'] != null
+          ? (doc.data() as Map)['addressID']
           : null,
-      isSuccess:
-          doc.data()['isSuccess'] != null ? doc.data()['isSuccess'] : false,
-      delivered:
-          doc.data()['delivered'] != null ? doc.data()['delivered'] : false,
-      sent: doc.data()['sent'] != null ? doc.data()['sent'] : false,
-      orderBy: doc.data()['orderBy'] != null ? doc.data()['orderBy'] : null,
-      totalAmount: doc.data()['totalAmount'] != null
-          ? double.parse(doc.data()['totalAmount'].toString())
+      deliveryDate: (doc.data() as Map)['deliveryDate'] != null
+          ? (doc.data() as Map)['deliveryDate'].toDate()
           : null,
-      orderTime:
-          doc.data()['orderTime'] != null ? doc.data()['orderTime'] : null,
-      paymentDetails: doc.data()['paymentDetails'] != null
-          ? doc.data()['paymentDetails']
+      isSuccess: (doc.data() as Map)['isSuccess'] != null
+          ? (doc.data() as Map)['isSuccess']
+          : false,
+      delivered: (doc.data() as Map)['delivered'] != null
+          ? (doc.data() as Map)['delivered']
+          : false,
+      sent: (doc.data() as Map)['sent'] != null
+          ? (doc.data() as Map)['sent']
+          : false,
+      orderBy: (doc.data() as Map)['orderBy'] != null
+          ? (doc.data() as Map)['orderBy']
           : null,
-      paymentMethod: doc.data()['paymentMethod'] != null
-          ? doc.data()['paymentMethod']
+      totalAmount: (doc.data() as Map)['totalAmount'] != null
+          ? double.parse((doc.data() as Map)['totalAmount'].toString())
           : null,
-      paymentIntent: doc.data()['paymentIntent'] != null
-          ? doc.data()['paymentIntent']
+      orderTime: (doc.data() as Map)['orderTime'] != null
+          ? (doc.data() as Map)['orderTime']
           : null,
-      addressDetails: doc.data()['addressDetails'] != null
+      paymentDetails: (doc.data() as Map)['paymentDetails'] != null
+          ? (doc.data() as Map)['paymentDetails']
+          : null,
+      paymentMethod: (doc.data() as Map)['paymentMethod'] != null
+          ? (doc.data() as Map)['paymentMethod']
+          : null,
+      paymentIntent: (doc.data() as Map)['paymentIntent'] != null
+          ? (doc.data() as Map)['paymentIntent']
+          : null,
+      addressDetails: (doc.data() as Map)['addressDetails'] != null
           ? AddressModel.fromJson(
-              doc.data()['addressDetails'],
-              uidReceived: doc.data()['addressDetails']['uid'],
+              (doc.data() as Map)['addressDetails'],
+              uidReceived: (doc.data() as Map)['addressDetails']['uid'],
             )
           : null,
       productIDs: [],
       products: [],
-      clientOrderUid: doc.data()['clientOrderUid'] != null
-          ? doc.data()['clientOrderUid']
+      clientOrderUid: (doc.data() as Map)['clientOrderUid'] != null
+          ? (doc.data() as Map)['clientOrderUid']
           : null,
       dailyProductIds: [],
       dailyProducts: [],
-      dailyOrderUid: doc.data()['dailyOrderUid'] != null
-          ? doc.data()['dailyOrderUid']
+      dailyOrderUid: (doc.data() as Map)['dailyOrderUid'] != null
+          ? (doc.data() as Map)['dailyOrderUid']
           : null,
-      dailyTotalAmount: doc.data()['dailyTotalAmount'] != null
-          ? double.parse(doc.data()['dailyTotalAmount'].toString())
+      dailyTotalAmount: (doc.data() as Map)['dailyTotalAmount'] != null
+          ? double.parse((doc.data() as Map)['dailyTotalAmount'].toString())
           : null,
-      normalTotalAmount: doc.data()['normalTotalAmount'] != null
-          ? double.parse(doc.data()['normalTotalAmount'].toString())
+      normalTotalAmount: (doc.data() as Map)['normalTotalAmount'] != null
+          ? double.parse((doc.data() as Map)['normalTotalAmount'].toString())
           : null,
     );
 
-    if (doc.data()['productIDs'] != null) {
-      for (String prodUid in doc.data()['productIDs']) {
+    if ((doc.data() as Map)['productIDs'] != null) {
+      for (String prodUid in (doc.data() as Map)['productIDs']) {
         order.productIDs.add(prodUid);
       }
     }
 
-    if (doc.data()['dailyProductIds'] != null) {
-      for (String prodUid in doc.data()['dailyProductIds']) {
+    if ((doc.data() as Map)['dailyProductIds'] != null) {
+      for (String prodUid in (doc.data() as Map)['dailyProductIds']) {
         order.dailyProductIds.add(prodUid);
       }
     }
 
-    if (doc.data()['products'] != null) {
-      for (Map product in doc.data()['products']) {
+    if ((doc.data() as Map)['products'] != null) {
+      for (Map product in (doc.data() as Map)['products']) {
         ItemModel itemModelAdd = ItemModel.fromJson(
           product,
           product['uid'],
@@ -128,8 +137,8 @@ class Order {
       }
     }
 
-    if (doc.data()['dailyProducts'] != null) {
-      for (Map product in doc.data()['dailyProducts']) {
+    if ((doc.data() as Map)['dailyProducts'] != null) {
+      for (Map product in (doc.data() as Map)['dailyProducts']) {
         ItemModel itemModelAdd = ItemModel.fromJson(
           product,
           product['uid'],

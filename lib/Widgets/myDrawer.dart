@@ -21,9 +21,13 @@ class MyDrawer extends StatelessWidget {
             ),
             accountName: Text(
               EcommerceApp.sharedPreferences.getString(
-                        EcommerceApp.userName,
-                      ) !=
-                      null
+                            EcommerceApp.userName,
+                          ) !=
+                          null &&
+                      EcommerceApp.sharedPreferences.getString(
+                            EcommerceApp.userName,
+                          ) !=
+                          ""
                   ? EcommerceApp.sharedPreferences.getString(
                       EcommerceApp.userName,
                     )
@@ -31,9 +35,13 @@ class MyDrawer extends StatelessWidget {
             ),
             accountEmail: Text(
               EcommerceApp.sharedPreferences.getString(
-                        EcommerceApp.userEmail,
-                      ) !=
-                      null
+                            EcommerceApp.userEmail,
+                          ) !=
+                          null &&
+                      EcommerceApp.sharedPreferences.getString(
+                            EcommerceApp.userEmail,
+                          ) !=
+                          ""
                   ? EcommerceApp.sharedPreferences.getString(
                       EcommerceApp.userEmail,
                     )
@@ -54,9 +62,13 @@ class MyDrawer extends StatelessWidget {
                   ? null
                   : Text(
                       EcommerceApp.sharedPreferences.getString(
-                                EcommerceApp.userName,
-                              ) !=
-                              null
+                                    EcommerceApp.userName,
+                                  ) !=
+                                  null &&
+                              EcommerceApp.sharedPreferences.getString(
+                                    EcommerceApp.userName,
+                                  ) !=
+                                  ""
                           ? EcommerceApp.sharedPreferences.getString(
                               EcommerceApp.userName,
                             )[0]

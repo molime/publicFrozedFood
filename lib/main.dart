@@ -11,20 +11,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'Authentication/authenication.dart';
 import 'package:e_shop/Config/config.dart';
 import 'Authentication/authenication.dart';
 import 'Config/config.dart';
-import 'Config/config.dart';
-import 'Config/config.dart';
-import 'Config/config.dart';
 import 'Counters/cartitemcounter.dart';
 import 'Counters/changeAddresss.dart';
 import 'Counters/totalMoney.dart';
 import 'Store/storehome.dart';
 import 'Store/storehome.dart';
+import 'package:e_shop/appConfig.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -35,34 +35,49 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-Future<void> main() async {
+Future<Widget> mainBuild(AppConfig appConfig) async {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = new MyHttpOverrides();
   await Firebase.initializeApp();
   EcommerceApp.auth = FirebaseAuth.instance;
   EcommerceApp.sharedPreferences = await SharedPreferences.getInstance();
   EcommerceApp.firestore = FirebaseFirestore.instance;
-  runApp(MyApp());
+  return MyApp(appConfig: appConfig);
+  //runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  final AppConfig appConfig;
+
+  MyApp({
+    Key key,
+    this.appConfig,
+  }) : super(
+          key: key,
+        );
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
+  Widget _flavorBanner(Widget child) {
+    return Banner(
+      child: child,
+      location: BannerLocation.topEnd,
+      message: widget.appConfig.flavor,
+      color: widget.appConfig.flavor == 'dev'
+          ? Colors.red.withOpacity(0.6)
+          : Colors.green.withOpacity(0.6),
+      textStyle: TextStyle(
+          fontWeight: FontWeight.w700, fontSize: 14.0, letterSpacing: 1.0),
+      //textDirection: TextDirection.ltr,
+    );
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
-    final pushProvider = new PushNotificationsProvider();
-    pushProvider.initNotifications();
-
-    pushProvider.messagesStream.listen((argumento) {
-      print('argumento desde home: $argumento');
-      Fluttertoast.showToast(msg: argumento['message']);
-    });
   }
 
   @override
@@ -102,7 +117,10 @@ class _MyAppState extends State<MyApp> {
           SplashScreen.id: (context) => SplashScreen(),
           OrderDetails.id: (context) => OrderDetails(),
         },
-        initialRoute: SplashScreen.id,
+        //initialRoute: SplashScreen.id,
+        home: _flavorBanner(
+          SplashScreen(),
+        ),
         //home: SplashScreen(),
       ),
     );
@@ -124,17 +142,30 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> displaySplash() async {
+    bool isGoogleSignIn = await googleSignInLocal.isSignedIn();
     Timer(Duration(seconds: 5), () async {
       if (EcommerceApp.auth.currentUser != null) {
         if (EcommerceApp.sharedPreferences
                     .getString(EcommerceApp.userStripeId) ==
                 null ||
+            EcommerceApp.sharedPreferences
+                    .getString(EcommerceApp.userStripeId) ==
+                "" ||
             EcommerceApp.sharedPreferences.getString(EcommerceApp.userUID) ==
                 null ||
-            EcommerceApp.sharedPreferences.getString(EcommerceApp.userName) ==
+            EcommerceApp.sharedPreferences
+                    .getString(EcommerceApp.userUID) ==
+                "" ||
+            EcommerceApp.sharedPreferences
+                    .getString(EcommerceApp.userName) ==
                 null ||
+            EcommerceApp.sharedPreferences
+                    .getString(EcommerceApp.userName) ==
+                "" ||
             EcommerceApp.sharedPreferences.getString(EcommerceApp.userEmail) ==
                 null ||
+            EcommerceApp.sharedPreferences.getString(EcommerceApp.userEmail) ==
+                "" ||
             EcommerceApp.sharedPreferences
                     .getString(EcommerceApp.userAvatarUrl) ==
                 null) {
@@ -144,9 +175,9 @@ class _SplashScreenState extends State<SplashScreen> {
               .get();
           await EcommerceApp.sharedPreferences.setString(
             EcommerceApp.userStripeId,
-            documentSnapshot.data()[EcommerceApp.userStripeId] != null
-                ? documentSnapshot.data()[EcommerceApp.userStripeId]
-                : null,
+            (documentSnapshot.data() as Map)[EcommerceApp.userStripeId] != null
+                ? (documentSnapshot.data() as Map)[EcommerceApp.userStripeId]
+                : "",
           );
           await EcommerceApp.sharedPreferences.setString(
               EcommerceApp.userUID, EcommerceApp.auth.currentUser.uid);
@@ -154,14 +185,15 @@ class _SplashScreenState extends State<SplashScreen> {
               EcommerceApp.userEmail, EcommerceApp.auth.currentUser.email);
           await EcommerceApp.sharedPreferences.setString(
               EcommerceApp.userName,
-              documentSnapshot.data()[EcommerceApp.userName] != null
-                  ? documentSnapshot.data()[EcommerceApp.userName]
-                  : null);
+              (documentSnapshot.data() as Map)[EcommerceApp.userName] != null
+                  ? (documentSnapshot.data() as Map)[EcommerceApp.userName]
+                  : "");
           await EcommerceApp.sharedPreferences.setString(
               EcommerceApp.userAvatarUrl,
-              documentSnapshot.data()[EcommerceApp.userAvatarUrl] != null
-                  ? documentSnapshot.data()[EcommerceApp.userAvatarUrl]
-                  : null);
+              (documentSnapshot.data() as Map)[EcommerceApp.userAvatarUrl] !=
+                      null
+                  ? (documentSnapshot.data() as Map)[EcommerceApp.userAvatarUrl]
+                  : "");
         }
         Route route = MaterialPageRoute(
           builder: (_) => StoreHome(),
@@ -170,6 +202,80 @@ class _SplashScreenState extends State<SplashScreen> {
           context,
           route,
         );
+      } else if (isGoogleSignIn) {
+        try {
+          GoogleSignInAccount signInAccount =
+              await googleSignInLocal.signInSilently(suppressErrors: false);
+          if (EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userStripeId) ==
+                  null ||
+              EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userStripeId) ==
+                  "" ||
+              EcommerceApp.sharedPreferences.getString(EcommerceApp.userUID) ==
+                  null ||
+              EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userUID) ==
+                  "" ||
+              EcommerceApp.sharedPreferences.getString(EcommerceApp.userName) ==
+                  null ||
+              EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userName) ==
+                  "" ||
+              EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userEmail) ==
+                  null ||
+              EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userEmail) ==
+                  "" ||
+              EcommerceApp.sharedPreferences
+                      .getString(EcommerceApp.userAvatarUrl) ==
+                  null) {
+            DocumentSnapshot documentSnapshot = await EcommerceApp.firestore
+                .collection(EcommerceApp.collectionUser)
+                .doc(signInAccount.id)
+                .get();
+            await EcommerceApp.sharedPreferences.setString(
+              EcommerceApp.userStripeId,
+              (documentSnapshot.data() as Map)[EcommerceApp.userStripeId] !=
+                      null
+                  ? (documentSnapshot.data() as Map)[EcommerceApp.userStripeId]
+                  : "",
+            );
+            await EcommerceApp.sharedPreferences
+                .setString(EcommerceApp.userUID, signInAccount.id);
+            await EcommerceApp.sharedPreferences
+                .setString(EcommerceApp.userEmail, signInAccount.email);
+            await EcommerceApp.sharedPreferences.setString(
+                EcommerceApp.userName,
+                (documentSnapshot.data() as Map)[EcommerceApp.userName] != null
+                    ? (documentSnapshot.data() as Map)[EcommerceApp.userName]
+                    : "");
+            await EcommerceApp.sharedPreferences.setString(
+                EcommerceApp.userAvatarUrl,
+                (documentSnapshot.data() as Map)[EcommerceApp.userAvatarUrl] !=
+                        null
+                    ? (documentSnapshot.data()
+                        as Map)[EcommerceApp.userAvatarUrl]
+                    : "");
+          }
+          Route route = MaterialPageRoute(
+            builder: (_) => StoreHome(),
+          );
+          Navigator.pushReplacement(
+            context,
+            route,
+          );
+        } catch (error) {
+          await googleSignInLocal.signOut();
+          Route route = MaterialPageRoute(
+            builder: (_) => AuthenticScreen(),
+          );
+          Navigator.pushReplacement(
+            context,
+            route,
+          );
+        }
       } else {
         Route route = MaterialPageRoute(
           builder: (_) => AuthenticScreen(),

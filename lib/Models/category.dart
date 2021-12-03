@@ -27,8 +27,8 @@ class CategoryElement {
   factory CategoryElement.fromDocument({DocumentSnapshot doc}) {
     List<String> searchTerms = [];
 
-    if (doc.data()['searchTerms'] != null) {
-      for (String term in doc.data()['searchTerms']) {
+    if ((doc.data() as Map)['searchTerms'] != null) {
+      for (String term in (doc.data() as Map)['searchTerms']) {
         searchTerms.add(
           term,
         );
@@ -36,13 +36,23 @@ class CategoryElement {
     }
 
     CategoryElement categoryElement = CategoryElement(
-      subtitle: doc.data()['subtitle'] != null ? doc.data()['subtitle'] : null,
+      subtitle: (doc.data() as Map)['subtitle'] != null
+          ? (doc.data() as Map)['subtitle']
+          : null,
       searchTerms: searchTerms,
       uid: doc.id != null ? doc.id : null,
-      cuenta: doc.data()['cuenta'] != null ? doc.data()['cuenta'] : null,
-      img: doc.data()['img'] != null ? doc.data()['img'] : null,
-      name: doc.data()['name'] != null ? doc.data()['name'] : null,
-      centro: doc.data()['centro'] != null ? doc.data()['centro'] : null,
+      cuenta: (doc.data() as Map)['cuenta'] != null
+          ? (doc.data() as Map)['cuenta']
+          : null,
+      img: (doc.data() as Map)['img'] != null
+          ? (doc.data() as Map)['img']
+          : null,
+      name: (doc.data() as Map)['name'] != null
+          ? (doc.data() as Map)['name']
+          : null,
+      centro: (doc.data() as Map)['centro'] != null
+          ? (doc.data() as Map)['centro']
+          : null,
     );
 
     return categoryElement;

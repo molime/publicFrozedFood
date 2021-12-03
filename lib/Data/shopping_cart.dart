@@ -625,10 +625,10 @@ class ShoppingCart extends ChangeNotifier {
         );
       } else {
         print({
-          'disponibilidad': doc.data()['disponibilidad'],
+          'disponibilidad': (doc.data() as Map)['disponibilidad'],
         });
-        int remaining = doc.data()['disponibilidad'] != null
-            ? doc.data()['disponibilidad']
+        int remaining = (doc.data() as Map)['disponibilidad'] != null
+            ? (doc.data() as Map)['disponibilidad']
             : null;
         if (remaining == null) {
           resultsCheck.add(false);

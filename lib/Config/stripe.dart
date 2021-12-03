@@ -11,8 +11,7 @@ Future<Map> createPaymentMethod({
   @required int expYear,
   @required String cvc,
 }) async {
-  String chargeUrl =
-      'https://us-central1-restaurantes-223b1.cloudfunctions.net/stripeCreatePaymentMethod';
+  String chargeUrl = 'your_url';
 
   var body = json.encode({
     'customer': customer,
@@ -25,7 +24,7 @@ Future<Map> createPaymentMethod({
 
   try {
     response = await http.post(
-      chargeUrl,
+      Uri.parse(chargeUrl),
       body: body,
       headers: {
         "content-type": 'text/plain',
@@ -62,8 +61,7 @@ Future<Map> createPaymentMethod({
 }
 
 Future<List<dynamic>> getCustomerCards() async {
-  String chargeUrl =
-      "https://us-central1-restaurantes-223b1.cloudfunctions.net/getCustomerCards";
+  String chargeUrl = "your_url";
 
   var body = json.encode({
     'customerId':
@@ -73,7 +71,7 @@ Future<List<dynamic>> getCustomerCards() async {
 
   try {
     response = await http.post(
-      chargeUrl,
+      Uri.parse(chargeUrl),
       body: body,
       headers: {
         "content-type": 'text/plain',
@@ -99,8 +97,7 @@ Future<Map> processPayment({
   String paymentMethod,
   String email,
 }) async {
-  String chargeUrl =
-      "https://us-central1-restaurantes-223b1.cloudfunctions.net/createPaymentIntent";
+  String chargeUrl = "your_url";
 
   var body = json.encode({
     'customerId': customerId,
@@ -112,7 +109,7 @@ Future<Map> processPayment({
 
   try {
     response = await http.post(
-      chargeUrl,
+      Uri.parse(chargeUrl),
       body: body,
       headers: {
         "content-type": 'text/plain',
@@ -133,8 +130,7 @@ Future<Map> processPayment({
 }
 
 Future<Map> createRefund({String paymentIntentId}) async {
-  String chargeUrl =
-      "https://us-central1-restaurantes-223b1.cloudfunctions.net/stripeRefundCreate";
+  String chargeUrl = "your_url";
 
   var body = json.encode({
     'paymentIntentId': paymentIntentId,
@@ -143,7 +139,7 @@ Future<Map> createRefund({String paymentIntentId}) async {
 
   try {
     response = await http.post(
-      chargeUrl,
+      Uri.parse(chargeUrl),
       body: body,
       headers: {
         "content-type": 'text/plain',
@@ -164,8 +160,7 @@ Future<Map> createRefund({String paymentIntentId}) async {
 }
 
 Future<Map> getOneCard({String cardId}) async {
-  String chargeUrl =
-      "https://us-central1-restaurantes-223b1.cloudfunctions.net/getCustomerSingleCard";
+  String chargeUrl = "your_url";
 
   var body = json.encode({
     'paymentMethod': cardId,
@@ -174,7 +169,7 @@ Future<Map> getOneCard({String cardId}) async {
 
   try {
     response = await http.post(
-      chargeUrl,
+      Uri.parse(chargeUrl),
       body: body,
       headers: {
         "content-type": 'text/plain',

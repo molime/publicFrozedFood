@@ -6,12 +6,16 @@ import 'package:e_shop/Models/creditCard.dart';
 import 'package:e_shop/Orders/placeOrderPayment.dart';
 import 'package:e_shop/Store/storehome.dart';
 import 'package:e_shop/Widgets/customAppBar.dart';
+import 'package:e_shop/Widgets/customTextField.dart';
 import 'package:e_shop/Widgets/myDrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
 import 'package:flutter_credit_card/flutter_credit_card.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_credit_card/credit_card_brand.dart';
+import 'package:flutter_credit_card/credit_card_form.dart';
+import 'package:flutter_credit_card/credit_card_model.dart';
 
 class AddCard extends StatefulWidget {
   final bool fromCardPage;
@@ -26,19 +30,44 @@ class AddCard extends StatefulWidget {
 
 class _AddCardState extends State<AddCard> {
   String cardNumber = '';
+  TextEditingController cardNumberController = TextEditingController();
   String expiryDate = '';
+  TextEditingController expiryDateController = TextEditingController();
   String cardHolderName = '';
+  TextEditingController cardHolderNameController = TextEditingController();
   String cvvCode = '';
+  TextEditingController cvvController = TextEditingController();
   bool isCvvFocused = false;
   bool showSpinner = false;
+  ScrollController _scrollController = ScrollController();
   final scaffoldKey = GlobalKey<ScaffoldState>();
 
   final formKey = GlobalKey<FormState>();
+
+  OutlineInputBorder border = OutlineInputBorder(
+    borderSide: BorderSide(
+      color: Colors.grey.withOpacity(0.7),
+      width: 2.0,
+    ),
+  );
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    border = OutlineInputBorder(
+      borderSide: BorderSide(
+        color: Colors.grey.withOpacity(0.7),
+        width: 2.0,
+      ),
+    );
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: true,
         key: scaffoldKey,
         appBar: MyAppBar(
           leadingWidget: IconButton(
@@ -153,7 +182,117 @@ class _AddCardState extends State<AddCard> {
         drawer: MyDrawer(),
         body: ModalProgressHUD(
           inAsyncCall: showSpinner,
-          child: Column(
+          child: SafeArea(
+            child: ListView(
+              controller: _scrollController,
+              shrinkWrap: true,
+              children: [
+                SizedBox(
+                  height: 30,
+                ),
+                CreditCardWidget(
+                  cardNumber: cardNumber,
+                  expiryDate: expiryDate,
+                  cardHolderName: cardHolderName,
+                  cvvCode: cvvCode,
+                  showBackView: isCvvFocused,
+                  obscureCardNumber: true,
+                  obscureCardCvv: true,
+                  isHolderNameVisible: true,
+                  cardBgColor: Colors.red,
+                  isSwipeGestureEnabled: true,
+                  onCreditCardWidgetChange: (CreditCardBrand creditCardBrand) {
+                    print('credit card change');
+                  },
+                  /*customCardTypeIcons: <CustomCardTypeIcon>[
+                    CustomCardTypeIcon(
+                      cardType: CardType.mastercard,
+                      cardImage: Image.asset(
+                        'assets/mastercard.png',
+                        height: 48,
+                        width: 48,
+                      ),
+                    ),
+                  ],*/
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            CreditCardForm(
+                              formKey: formKey,
+                              obscureCvv: true,
+                              obscureNumber: true,
+                              cardNumber: cardNumber,
+                              cvvCode: cvvCode,
+                              isHolderNameVisible: true,
+                              isCardNumberVisible: true,
+                              isExpiryDateVisible: true,
+                              cardHolderName: cardHolderName,
+                              expiryDate: expiryDate,
+                              themeColor: Colors.blue,
+                              textColor: Colors.black,
+                              onCreditCardModelChange: onCreditCardModelChange,
+                              cardNumberDecoration: InputDecoration(
+                                labelText: 'Number',
+                                hintText: 'XXXX XXXX XXXX XXXX',
+                                hintStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                labelStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                focusedBorder: border,
+                                enabledBorder: border,
+                              ),
+                              expiryDateDecoration: InputDecoration(
+                                hintStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                labelStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                focusedBorder: border,
+                                enabledBorder: border,
+                                labelText: 'Expired Date',
+                                hintText: 'XX/XX',
+                              ),
+                              cvvCodeDecoration: InputDecoration(
+                                hintStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                labelStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                focusedBorder: border,
+                                enabledBorder: border,
+                                labelText: 'CVV',
+                                hintText: 'XXX',
+                              ),
+                              cardHolderDecoration: InputDecoration(
+                                hintStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                labelStyle:
+                                    const TextStyle(color: Colors.blueGrey),
+                                focusedBorder: border,
+                                enabledBorder: border,
+                                labelText: 'Card Holder',
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 50.0,
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 50.0,
+                ),
+              ],
+            ),
+          ),
+          /*Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -161,6 +300,7 @@ class _AddCardState extends State<AddCard> {
                 height: 40,
               ),
               CreditCardWidget(
+                height: MediaQuery.of(context).size.height * 0.40,
                 cardNumber: cardNumber,
                 expiryDate: expiryDate,
                 cardHolderName: cardHolderName,
@@ -178,6 +318,11 @@ class _AddCardState extends State<AddCard> {
                   child: Column(
                     children: [
                       CreditCardForm(
+                        cardHolderName: cardHolderName,
+                        cardNumber: cardNumber,
+                        cvvCode: cvvCode,
+                        expiryDate: expiryDate,
+                        themeColor: Colors.blue,
                         onCreditCardModelChange: onCreditCardModelChange,
                         formKey: formKey,
                         obscureCvv: true,
@@ -223,14 +368,29 @@ class _AddCardState extends State<AddCard> {
                   ),
                 ),
               ),
+              SizedBox(
+                height: 100,
+              ),
             ],
-          ),
+          ),*/
         ),
       ),
     );
   }
 
   void onCreditCardModelChange(CreditCardModel creditCardModel) {
+    print({
+      'areEqual': cardHolderName == creditCardModel.cardHolderName,
+      'cardHolderName': cardHolderName,
+      'creditCardModel.cardHolderName': creditCardModel.cardHolderName
+    });
+    if (cardHolderName != creditCardModel.cardHolderName) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(seconds: 1),
+        curve: Curves.fastOutSlowIn,
+      );
+    }
     setState(() {
       cardNumber = creditCardModel.cardNumber;
       expiryDate = creditCardModel.expiryDate;

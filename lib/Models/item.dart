@@ -269,11 +269,11 @@ class ItemModel {
     DocumentSnapshot doc =
         await EcommerceApp.firestore.collection("dailyMenus").doc(uid).get();
     if (doc != null) {
-      if (doc.data()["disponibilidad"] != null) {
+      if ((doc.data() as Map)["disponibilidad"] != null) {
         await EcommerceApp.firestore.collection("dailyMenus").doc(uid).update({
-          "disponibilidad": doc.data()["disponibilidad"] - countAdded,
+          "disponibilidad": (doc.data() as Map)["disponibilidad"] - countAdded,
         });
-        disponibilidad = doc.data()["disponibilidad"] - countAdded;
+        disponibilidad = (doc.data() as Map)["disponibilidad"] - countAdded;
       }
     }
   }

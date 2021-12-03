@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:e_shop/Config/constants.dart';
 import 'package:e_shop/Config/push_notification_provider.dart';
 import 'package:e_shop/Data/category_data.dart';
@@ -12,9 +11,6 @@ import 'package:e_shop/Store/categories_page.dart';
 import 'package:e_shop/Store/daily_menus.dart';
 import 'package:e_shop/Store/product_page.dart';
 import 'package:e_shop/Counters/cartitemcounter.dart';
-import 'package:e_shop/Store/storehome_screens/orders.dart';
-import 'package:e_shop/Store/storehome_screens/profile.dart';
-import 'package:e_shop/Store/storehome_screens/store.dart';
 import 'package:e_shop/Widgets/categoryItem.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -23,26 +19,23 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:e_shop/Config/config.dart';
-import '../Widgets/loadingWidget.dart';
-import '../Widgets/myDrawer.dart';
-import '../Widgets/searchBox.dart';
-import '../Models/item.dart';
+import 'package:e_shop/Widgets/loadingWidget.dart';
+import 'package:e_shop/Widgets/myDrawer.dart';
+import 'package:e_shop/Widgets/searchBox.dart';
+import 'package:e_shop/Models/item.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 
 double width;
 
-class StoreHome extends StatefulWidget {
+class StoreSubScreen extends StatefulWidget {
   @override
-  _StoreHomeState createState() => _StoreHomeState();
+  _StoreSubScreenState createState() => _StoreSubScreenState();
 }
 
-class _StoreHomeState extends State<StoreHome> with TickerProviderStateMixin {
-  PageController _pageController;
-  GlobalKey _bottomNavigationKey = GlobalKey();
+class _StoreSubScreenState extends State<StoreSubScreen>
+    with TickerProviderStateMixin {
   TabController _tabController;
-
-  int _pageIndex = 1;
 
   @override
   void initState() {
@@ -57,9 +50,6 @@ class _StoreHomeState extends State<StoreHome> with TickerProviderStateMixin {
     });*/
 
     _tabController = TabController(length: 2, vsync: this);
-    _pageController = PageController(
-      initialPage: 1,
-    );
     startCategories();
   }
 
@@ -76,7 +66,7 @@ class _StoreHomeState extends State<StoreHome> with TickerProviderStateMixin {
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
-        /*appBar: AppBar(
+        appBar: AppBar(
           flexibleSpace: Container(
             decoration: new BoxDecoration(
               color: Colors.lightGreenAccent,
@@ -158,49 +148,8 @@ class _StoreHomeState extends State<StoreHome> with TickerProviderStateMixin {
             ),
           ],
         ),
-        drawer: MyDrawer(),*/
-        body: PageView(
-          controller: _pageController,
-          children: [
-            MyOrdersSubScreen(),
-            StoreSubScreen(),
-            ProfileScreenSubScreen(),
-          ],
-          onPageChanged: (index) {
-            setState(() {
-              _pageController.jumpToPage(index);
-            });
-          },
-        ),
-        bottomNavigationBar: CurvedNavigationBar(
-          onTap: (index) {
-            setState(() {
-              _pageIndex = index;
-              _pageController.jumpToPage(index);
-            });
-          },
-          color: Colors.lightGreenAccent,
-          buttonBackgroundColor: Colors.lightGreenAccent,
-          key: _bottomNavigationKey,
-          index: _pageIndex,
-          animationCurve: Curves.easeInOut,
-          backgroundColor: Colors.white,
-          items: [
-            Icon(
-              Icons.history,
-              color: Colors.white,
-            ),
-            Icon(
-              Icons.food_bank_outlined,
-              color: Colors.white,
-            ),
-            Icon(
-              Icons.person,
-              color: Colors.white,
-            ),
-          ],
-        ),
-        /*Container(
+        drawer: MyDrawer(),
+        body: Container(
           child: TabBarView(
             controller: _tabController,
             children: [
@@ -208,7 +157,7 @@ class _StoreHomeState extends State<StoreHome> with TickerProviderStateMixin {
               DailyMenus(),
             ],
           ),
-        ),*/
+        ),
       ),
     );
   }

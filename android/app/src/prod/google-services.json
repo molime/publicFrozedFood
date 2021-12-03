@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1029486443585",
+    "project_id": "tictacshopprod",
+    "storage_bucket": "tictacshopprod.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029486443585:android:76a98373c79ca10fbedac0",
+        "android_client_info": {
+          "package_name": "com.mositech.tictacshop.prod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1029486443585-4dctiqdv8j2op0i8hf20g757hkcm2m4f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mositech.tictacshop.prod",
+            "certificate_hash": "8505bd5cf8f1893451ac0513581d2115c1ac0618"
+          }
+        },
+        {
+          "client_id": "1029486443585-mqru96samorlpsip0gtjp8ou5poj1ttr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDg5NHvP0i4FqEmaR5pap7Grw3-E_bamGY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1029486443585-mqru96samorlpsip0gtjp8ou5poj1ttr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

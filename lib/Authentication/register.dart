@@ -7,6 +7,9 @@ import 'package:e_shop/DialogBox/loadingDialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
+import 'package:flutter_signin_button/button_view.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import '../Config/config.dart';
 import '../DialogBox/errorDialog.dart';
@@ -148,6 +151,71 @@ class _RegisterState extends State<Register> {
                 style: TextStyle(
                   color: Colors.white,
                 ),
+              ),
+            ),
+            SizedBox(
+              height: 15.0,
+            ),
+            Center(
+              child: SignInButton(
+                Buttons.Google,
+                onPressed: () async {
+                  showDialog(
+                    context: context,
+                    builder: (c) {
+                      return LoadingAlertDialog();
+                    },
+                  );
+                  try {
+                    GoogleSignInAccount signInResult =
+                        await googleSignInLocal.signIn();
+
+                    if (signInResult != null) {
+                      bool resultRegister =
+                          await _saveGoogleUserInfoToFirestore(signInResult);
+                      if (resultRegister) {
+                        Navigator.pop(context);
+                        Route route = MaterialPageRoute(
+                          builder: (context) => StoreHome(),
+                        );
+                        Navigator.pushReplacement(context, route);
+                      } else {
+                        Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (c) {
+                            return ErrorAlertDialog(
+                              message:
+                                  "Hubo un error en tu registro, lo sentimos. Inténtalo nuevamente",
+                            );
+                          },
+                        );
+                      }
+                    } else {
+                      Navigator.pop(context);
+                      showDialog(
+                        context: context,
+                        builder: (c) {
+                          return ErrorAlertDialog(
+                            message:
+                                "Hubo un error en tu registro, lo sentimos. Inténtalo nuevamente",
+                          );
+                        },
+                      );
+                    }
+                  } catch (error) {
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (c) {
+                        return ErrorAlertDialog(
+                          message: error.toString(),
+                        );
+                      },
+                    );
+                    return;
+                  }
+                },
               ),
             ),
             SizedBox(
@@ -329,6 +397,70 @@ class _RegisterState extends State<Register> {
     }
   }
 
+  Future<bool> _saveGoogleUserInfoToFirestore(
+      GoogleSignInAccount googleSignInAccount) async {
+    DocumentSnapshot findUser = await EcommerceApp.firestore
+        .collection(EcommerceApp.collectionUser)
+        .doc(googleSignInAccount.id)
+        .get();
+
+    if (findUser.exists) {
+      await EcommerceApp.sharedPreferences
+          .setString(EcommerceApp.userUID, googleSignInAccount.id);
+      await EcommerceApp.sharedPreferences
+          .setString(EcommerceApp.userEmail, googleSignInAccount.email);
+      await EcommerceApp.sharedPreferences
+          .setString(EcommerceApp.userName, googleSignInAccount.displayName);
+      await EcommerceApp.sharedPreferences
+          .setString(EcommerceApp.userAvatarUrl, "");
+      await EcommerceApp.sharedPreferences
+          .setStringList(EcommerceApp.userCartList, ["garbageValue"]);
+      await EcommerceApp.sharedPreferences.setString(
+        EcommerceApp.userStripeId,
+        (findUser.data() as Map)[EcommerceApp.userStripeId] != null
+            ? (findUser.data() as Map)[EcommerceApp.userStripeId]
+            : "",
+      );
+      return true;
+    } else {
+      dynamic stripeCustomer =
+          await _registerUserStripe(email: googleSignInAccount.email);
+      String stripeId = stripeCustomer["id"];
+
+      if (stripeId != null) {
+        await EcommerceApp.firestore
+            .collection(EcommerceApp.collectionUser)
+            .doc(googleSignInAccount.id)
+            .set({
+          EcommerceApp.userUID: googleSignInAccount.id,
+          EcommerceApp.userEmail: googleSignInAccount.email,
+          EcommerceApp.userName: googleSignInAccount.displayName,
+          EcommerceApp.userAvatarUrl: null,
+          EcommerceApp.userCartList: ["garbageValue"],
+          EcommerceApp.userStripeId: stripeId,
+        });
+
+        await EcommerceApp.sharedPreferences
+            .setString(EcommerceApp.userUID, googleSignInAccount.id);
+        await EcommerceApp.sharedPreferences
+            .setString(EcommerceApp.userEmail, googleSignInAccount.email);
+        await EcommerceApp.sharedPreferences
+            .setString(EcommerceApp.userName, googleSignInAccount.displayName);
+        await EcommerceApp.sharedPreferences
+            .setString(EcommerceApp.userAvatarUrl, "");
+        await EcommerceApp.sharedPreferences
+            .setStringList(EcommerceApp.userCartList, ["garbageValue"]);
+        await EcommerceApp.sharedPreferences.setString(
+          EcommerceApp.userStripeId,
+          stripeId,
+        );
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
   Future<dynamic> _registerUserStripe({String email}) async {
     String chargeUrl =
         "https://us-central1-restaurantes-223b1.cloudfunctions.net/stripeCreateCustomer";
@@ -338,7 +470,7 @@ class _RegisterState extends State<Register> {
 
     try {
       response = await http.post(
-        chargeUrl,
+        Uri.parse(chargeUrl),
         body: body,
         headers: {
           "content-type": 'text/plain',

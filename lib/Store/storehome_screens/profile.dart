@@ -5,17 +5,18 @@ import 'package:e_shop/Config/config.dart';
 import 'package:e_shop/Store/storehome.dart';
 import 'package:e_shop/Widgets/changeNameDialog.dart';
 import 'package:e_shop/Widgets/customAppBar.dart';
+import 'package:e_shop/Widgets/myDrawer.dart';
 import 'package:e_shop/Widgets/profileCard.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreenSubScreen extends StatefulWidget {
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  _ProfileScreenSubScreenState createState() => _ProfileScreenSubScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenSubScreenState extends State<ProfileScreenSubScreen> {
   bool changePassword = false;
   bool changeName = false;
   String password;
@@ -52,19 +53,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Scaffold(
               key: _scaffoldKey,
               appBar: MyAppBar(
-                leadingWidget: IconButton(
-                    icon: Icon(Icons.chevron_left),
-                    onPressed: () {
-                      Route route = MaterialPageRoute(
-                        builder: (context) => StoreHome(),
-                      );
-                      Navigator.pushReplacement(
-                        context,
-                        route,
-                      );
-                    }),
-                showCart: false,
+                showCart: true,
               ),
+              drawer: MyDrawer(),
               body: ListView(
                 shrinkWrap: true,
                 children: [

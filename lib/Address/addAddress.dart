@@ -10,9 +10,11 @@ import 'package:e_shop/Widgets/myDrawer.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:geocoder/geocoder.dart' as geocoder;
 import 'package:geoflutterfire/geoflutterfire.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:google_geocoding/google_geocoding.dart' as googleCoding;
+import 'package:google_place/google_place.dart' as googlePlace;
 
 final geo = Geoflutterfire();
 
@@ -43,13 +45,26 @@ class _AddAddressState extends State<AddAddress> {
 
   final cReference = TextEditingController();
 
-  List<geocoder.Address> addresses = [];
+  googleCoding.GoogleGeocoding ggcoding = googleCoding.GoogleGeocoding(
+    LocalMapsApi().googleApiKey,
+  );
+  googlePlace.GooglePlace gPlace;
+
+  //List<geocoder.Address> addresses = [];
+
+  List<Map> locations = [];
+  List<googleCoding.GeocodingResult> googleLocations = [];
 
   bool searching = false;
 
   bool showSpinner = false;
 
-  geocoder.Address addressSelected;
+  //geocoder.Address addressSelected;
+
+  Map locationSelected;
+  Placemark locationSelectedAddress;
+
+  googleCoding.GeocodingResult googleLocationSelected;
 
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
@@ -85,6 +100,7 @@ class _AddAddressState extends State<AddAddress> {
   void initState() {
     super.initState();
     _determinePosition();
+    gPlace = googlePlace.GooglePlace(LocalMapsApi().googleApiKey);
   }
 
   @override
@@ -114,7 +130,7 @@ class _AddAddressState extends State<AddAddress> {
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () async {
-            if (addressSelected == null) {
+            if (googleLocationSelected == null) {
               showDialog(
                 context: context,
                 builder: (c) {
@@ -128,9 +144,13 @@ class _AddAddressState extends State<AddAddress> {
                 showSpinner = true;
               });
               GeoFirePoint myLocation = geo.point(
-                latitude: addressSelected.coordinates.latitude,
-                longitude: addressSelected.coordinates.longitude,
+                latitude: googleLocationSelected.geometry.location.lat,
+                longitude: googleLocationSelected.geometry.location.lng,
               );
+              List<Placemark> placeMark = await placemarkFromCoordinates(
+                  googleLocationSelected.geometry.location.lat,
+                  googleLocationSelected.geometry.location.lng);
+              Placemark placemarkFire = placeMark.first;
               await EcommerceApp.firestore
                   .collection(EcommerceApp.collectionUser)
                   .doc(
@@ -140,17 +160,18 @@ class _AddAddressState extends State<AddAddress> {
                   )
                   .collection(EcommerceApp.subCollectionAddress)
                   .add({
-                'addressLine': addressSelected.addressLine,
-                'postalCode': addressSelected.postalCode,
-                'countryName': addressSelected.countryName,
-                'countryCode': addressSelected.countryCode,
-                'adminArea': addressSelected.adminArea,
-                'locality': addressSelected.locality,
-                'featureName': addressSelected.featureName,
-                'subAdminArea': addressSelected.subAdminArea,
-                'subLocality': addressSelected.subLocality,
-                'thoroughfare': addressSelected.thoroughfare,
-                'subThroughFare': addressSelected.subThoroughfare,
+                //'addressLine': locationSelected['placemark'].addressLine,
+                'addressLine': googleLocationSelected.formattedAddress,
+                'postalCode': placemarkFire.postalCode,
+                'countryName': placemarkFire.country,
+                'countryCode': placemarkFire.isoCountryCode,
+                'adminArea': placemarkFire.administrativeArea,
+                'locality': placemarkFire.locality,
+                'featureName': googleLocationSelected.formattedAddress,
+                'subAdminArea': placemarkFire.subAdministrativeArea,
+                'subLocality': placemarkFire.subLocality,
+                'thoroughfare': placemarkFire.thoroughfare,
+                'subThroughFare': placemarkFire.subThoroughfare,
                 'reference': cReference.text.trim(),
                 'position': myLocation.data
               });
@@ -168,9 +189,9 @@ class _AddAddressState extends State<AddAddress> {
               setState(() {
                 searching = false;
                 showSpinner = false;
-                addresses = [];
+                googleLocations = [];
                 markers = {};
-                addressSelected = null;
+                googleLocationSelected = null;
                 _initialPositon = LatLng(
                   19.4326018,
                   -99.1332049,
@@ -234,92 +255,373 @@ class _AddAddressState extends State<AddAddress> {
                 left: 15.0,
                 child: Column(
                   children: [
-                    Container(
-                      height: 50.0,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10.0),
-                          color: Colors.white),
-                      child: TextField(
-                        controller: cName,
-                        decoration: InputDecoration(
-                          hintText: 'Escribir dirección',
-                          border: InputBorder.none,
-                          contentPadding:
-                              EdgeInsets.only(left: 15.0, top: 15.0),
-                          suffixIcon: Icon(
-                            Icons.search,
-                            size: 30.0,
+                    /*if (locationSelected == null) ...[
+                      Container(
+                        height: 50.0,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
+                            color: Colors.white),
+                        child: TextField(
+                          controller: cName,
+                          decoration: InputDecoration(
+                            hintText: 'Escribir dirección',
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.only(left: 15.0, top: 15.0),
+                            suffixIcon: Icon(
+                              Icons.search,
+                              size: 30.0,
+                            ),
                           ),
+                          onChanged: (value) async {
+                            List<Map> addLook = await searchandNavigate(
+                              searchValue: value,
+                            );
+                            setState(() {
+                              searching = true;
+                              locations = addLook;
+                            });
+                          },
                         ),
-                        onChanged: (value) async {
-                          List<geocoder.Address> addLook =
-                              await searchandNavigate(
-                            searchValue: value,
-                          );
-                          setState(() {
-                            searching = true;
-                            addresses = addLook;
-                          });
-                        },
                       ),
-                    ),
-                    if (addresses.length > 0 && searching) ...[
-                      ListView.builder(
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
-                        itemCount: addresses.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return ListTile(
-                            tileColor: Colors.white,
+                    ],*/
+                    if (googleLocationSelected == null) ...[
+                      Container(
+                        height: 50.0,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
+                            color: Colors.white),
+                        child: TextField(
+                          controller: cName,
+                          decoration: InputDecoration(
+                            hintText: 'Escribir dirección',
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.only(left: 15.0, top: 15.0),
+                            suffixIcon: Icon(
+                              Icons.search,
+                              size: 30.0,
+                            ),
+                          ),
+                          onChanged: (value) async {
+                            List<googleCoding.GeocodingResult> addLook =
+                                await searchGoogleAddress(
+                              searchValue: value,
+                            );
+                            setState(() {
+                              searching = true;
+                              googleLocations = addLook;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                    /*if (locations.length == 0 &&
+                        !searching &&
+                        locationSelected != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 5.0,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(
+                                20,
+                              ),
+                            ),
+                          ),
+                          child: ListTile(
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete_forever,
+                              ),
+                              onPressed: () {
+                                _googleMapControllerontroller.animateCamera(
+                                  CameraUpdate.newCameraPosition(
+                                    CameraPosition(
+                                      target: LatLng(
+                                        19.4326018,
+                                        -99.1332049,
+                                      ),
+                                      zoom: 15.0,
+                                    ),
+                                  ),
+                                );
+                                setState(
+                                  () {
+                                    _initialPositon = LatLng(
+                                      19.4326018,
+                                      -99.1332049,
+                                    );
+                                    markers = {};
+                                    locationSelected = null;
+                                  },
+                                );
+                              },
+                            ),
+                            tileColor: Colors.pink,
                             leading: Icon(
                               Icons.location_on,
                             ),
-                            title: Text(addresses[index].addressLine),
+                            title: Text(locationSelected['placemark'].street),
                             onTap: () {
-                              _googleMapControllerontroller.animateCamera(
-                                CameraUpdate.newCameraPosition(
-                                  CameraPosition(
-                                    target: LatLng(
-                                      addresses[index].coordinates.latitude,
-                                      addresses[index].coordinates.longitude,
+                              print("you Clicked me!!!");
+                            },
+                          ),
+                        ),
+                      ),
+                    ],*/
+                    if (googleLocations.length == 0 &&
+                        !searching &&
+                        googleLocationSelected != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          top: 5.0,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(
+                                20,
+                              ),
+                            ),
+                          ),
+                          child: ListTile(
+                            trailing: IconButton(
+                              icon: Icon(
+                                Icons.delete_forever,
+                              ),
+                              onPressed: () {
+                                _googleMapControllerontroller.animateCamera(
+                                  CameraUpdate.newCameraPosition(
+                                    CameraPosition(
+                                      target: LatLng(
+                                        19.4326018,
+                                        -99.1332049,
+                                      ),
+                                      zoom: 15.0,
                                     ),
-                                    zoom: 15.0,
+                                  ),
+                                );
+                                setState(
+                                  () {
+                                    _initialPositon = LatLng(
+                                      19.4326018,
+                                      -99.1332049,
+                                    );
+                                    markers = {};
+                                    googleLocationSelected = null;
+                                  },
+                                );
+                              },
+                            ),
+                            tileColor: Colors.pink,
+                            leading: Icon(
+                              Icons.location_on,
+                            ),
+                            title:
+                                Text(googleLocationSelected.formattedAddress),
+                          ),
+                        ),
+                      ),
+                    ],
+                    /*if (locations.length > 0 && searching) ...[
+                      ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: locations.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          Placemark placeShow = locations[index]['placemark'];
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: 5.0,
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(
+                                    20,
                                   ),
                                 ),
-                              );
-                              String markerIdVal = createMarkerId();
-                              final MarkerId markerId = MarkerId(markerIdVal);
-
-                              // creating a new MARKER
-                              final Marker marker = Marker(
-                                markerId: markerId,
-                                position: LatLng(
-                                  addresses[index].coordinates.latitude,
-                                  addresses[index].coordinates.longitude,
+                              ),
+                              child: ListTile(
+                                tileColor: Colors.white,
+                                leading: Icon(
+                                  Icons.location_on,
                                 ),
-                                infoWindow: InfoWindow(
-                                    title: markerIdVal, snippet: '*'),
-                              );
-                              setState(() {
-                                _initialPositon = LatLng(
-                                    addresses[index].coordinates.latitude,
-                                    addresses[index].coordinates.longitude);
-                                markers = {};
-                                markers[markerId] = marker;
-                                addressSelected = addresses[index];
-                                searching = false;
-                                addresses = [];
-                                cName.clear();
-                              });
-                            },
+                                title: Text(placeShow.street),
+                                onTap: () {
+                                  _googleMapControllerontroller.animateCamera(
+                                    CameraUpdate.newCameraPosition(
+                                      CameraPosition(
+                                        target: LatLng(
+                                          locations[index]['location'].latitude,
+                                          locations[index]['location']
+                                              .longitude,
+                                        ),
+                                        zoom: 15.0,
+                                      ),
+                                    ),
+                                  );
+                                  String markerIdVal = createMarkerId();
+                                  final MarkerId markerId =
+                                      MarkerId(markerIdVal);
+
+                                  // creating a new MARKER
+                                  final Marker marker = Marker(
+                                    markerId: markerId,
+                                    position: LatLng(
+                                      locations[index]['location'].latitude,
+                                      locations[index]['location'].longitude,
+                                    ),
+                                    infoWindow: InfoWindow(
+                                        title: markerIdVal, snippet: '*'),
+                                  );
+                                  setState(() {
+                                    _initialPositon = LatLng(
+                                        locations[index]['location'].latitude,
+                                        locations[index]['location'].longitude);
+                                    markers = {};
+                                    markers[markerId] = marker;
+                                    locationSelected = locations[index];
+                                    searching = false;
+                                    locations = [];
+                                    cName.clear();
+                                  });
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],*/
+                    if (googleLocations.length > 0 && searching) ...[
+                      ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
+                        itemCount: googleLocations.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          //Placemark placeShow = locations[index]['placemark'];
+                          return Padding(
+                            padding: const EdgeInsets.only(
+                              top: 5.0,
+                            ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(
+                                    20,
+                                  ),
+                                ),
+                              ),
+                              child: ListTile(
+                                tileColor: Colors.white,
+                                leading: Icon(
+                                  Icons.location_on,
+                                ),
+                                title: Text(
+                                    googleLocations[index].formattedAddress),
+                                onTap: () async {
+                                  _googleMapControllerontroller.animateCamera(
+                                    CameraUpdate.newCameraPosition(
+                                      CameraPosition(
+                                        target: LatLng(
+                                          googleLocations[index]
+                                              .geometry
+                                              .location
+                                              .lat,
+                                          googleLocations[index]
+                                              .geometry
+                                              .location
+                                              .lng,
+                                        ),
+                                        zoom: 15.0,
+                                      ),
+                                    ),
+                                  );
+                                  String markerIdVal = createMarkerId();
+                                  final MarkerId markerId =
+                                      MarkerId(markerIdVal);
+
+                                  // creating a new MARKER
+                                  final Marker marker = Marker(
+                                    markerId: markerId,
+                                    position: LatLng(
+                                      googleLocations[index]
+                                          .geometry
+                                          .location
+                                          .lat,
+                                      googleLocations[index]
+                                          .geometry
+                                          .location
+                                          .lng,
+                                    ),
+                                    infoWindow: InfoWindow(
+                                        title: markerIdVal, snippet: '*'),
+                                  );
+                                  List<Placemark> placeMark =
+                                      await placemarkFromCoordinates(
+                                          googleLocations[index]
+                                              .geometry
+                                              .location
+                                              .lat,
+                                          googleLocations[index]
+                                              .geometry
+                                              .location
+                                              .lng);
+                                  print({
+                                    'street': placeMark.first.street,
+                                    'name': placeMark.first.name,
+                                    'subAdministrativeArea':
+                                        placeMark.first.subAdministrativeArea,
+                                    'administrativeArea':
+                                        placeMark.first.administrativeArea,
+                                    'isoCountryCode':
+                                        placeMark.first.isoCountryCode,
+                                    'country': placeMark.first.country,
+                                    'locality': placeMark.first.locality,
+                                    'postalCode': placeMark.first.postalCode,
+                                    'subLocality': placeMark.first.subLocality,
+                                    'thoroughfare':
+                                        placeMark.first.thoroughfare,
+                                    'subThoroughfare':
+                                        placeMark.first.subThoroughfare,
+                                  });
+                                  setState(() {
+                                    _initialPositon = LatLng(
+                                        googleLocations[index]
+                                            .geometry
+                                            .location
+                                            .lat,
+                                        googleLocations[index]
+                                            .geometry
+                                            .location
+                                            .lng);
+                                    markers = {};
+                                    markers[markerId] = marker;
+                                    googleLocationSelected =
+                                        googleLocations[index];
+                                    searching = false;
+                                    googleLocations = [];
+                                    cName.clear();
+                                  });
+                                },
+                              ),
+                            ),
                           );
                         },
                       ),
                     ],
-                    if (addresses.length == 0 &&
+                    /*if (locations.length == 0 &&
                         !searching &&
-                        addressSelected != null) ...[
+                        locationSelected != null) ...[
                       SizedBox(
                         height: 10.0,
                       ),
@@ -327,8 +629,42 @@ class _AddAddressState extends State<AddAddress> {
                         height: 50.0,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10.0),
-                            color: Colors.white),
+                          borderRadius: BorderRadius.circular(
+                            10.0,
+                          ),
+                          color: Colors.white,
+                        ),
+                        child: TextField(
+                          controller: cReference,
+                          decoration: InputDecoration(
+                            hintText:
+                                'Número interior, torre, departamento o referencia (opcional)',
+                            border: InputBorder.none,
+                            contentPadding:
+                                EdgeInsets.only(left: 15.0, top: 15.0),
+                            suffixIcon: Icon(
+                              Icons.house,
+                              size: 30.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],*/
+                    if (googleLocations.length == 0 &&
+                        !searching &&
+                        googleLocationSelected != null) ...[
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      Container(
+                        height: 50.0,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(
+                            10.0,
+                          ),
+                          color: Colors.white,
+                        ),
                         child: TextField(
                           controller: cReference,
                           decoration: InputDecoration(
@@ -350,134 +686,49 @@ class _AddAddressState extends State<AddAddress> {
               ),
             ],
           ),
-        ), /*SingleChildScrollView(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                  padding: EdgeInsets.all(
-                    8.0,
-                  ),
-                  child: Text(
-                    "Agregar nueva dirección",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20.0,
-                    ),
-                  ),
-                ),
-              ),
-              Stack(
-                children: [
-                  GoogleMap(
-                    compassEnabled: true,
-                    myLocationEnabled: true,
-                    myLocationButtonEnabled: true,
-                    rotateGesturesEnabled: true,
-                    initialCameraPosition: CameraPosition(
-                      target: _initialPositon != null
-                          ? _initialPositon
-                          : LatLng(
-                              19.4326018,
-                              -99.1332049,
-                            ),
-                      zoom: 14.5,
-                    ),
-                    onMapCreated: (GoogleMapController controller) =>
-                        _googleMapControllerontroller = controller,
-                  ),
-                ],
-              ),
-              */ /*Expanded(
-                child: GoogleMap(
-                  compassEnabled: true,
-                  myLocationEnabled: true,
-                  myLocationButtonEnabled: true,
-                  rotateGesturesEnabled: true,
-                  initialCameraPosition: CameraPosition(
-                    target: _initialPositon != null
-                        ? _initialPositon
-                        : LatLng(
-                            19.4326018,
-                            -99.1332049,
-                          ),
-                    zoom: 14.5,
-                  ),
-                  onMapCreated: (GoogleMapController controller) =>
-                      _googleMapControllerontroller = controller,
-                ),
-              ),*/ /*
-              */ /*AddressSearchBuilder(
-                geoMethods: geoMethods,
-                controller: cName,
-                builder: (
-                  BuildContext context,
-                  AsyncSnapshot<List<Address>> snapshot, {
-                  TextEditingController controller,
-                  Future<void> Function() searchAddress,
-                  Future<Address> Function(Address address) getGeometry,
-                }) {
-                  return AddressSearchDialog(
-                    snapshot: snapshot,
-                    controller: controller,
-                    searchAddress: searchAddress,
-                    getGeometry: getGeometry,
-                    onDone: (Address address) {
-                      setState(() {
-                        _initialPositon = LatLng(
-                            address.coords.latitude, address.coords.longitude);
-                      });
-                    },
-                  );
-                },
-              )*/ /*
-              */ /*Form(
-                key: formKey,
-                child: Column(
-                  children: [
-                    MyTextField(
-                      hint: "Nombre",
-                      controller: cName,
-                    ),
-                    MyTextField(
-                      hint: "Teléfono",
-                      controller: cPhoneNumber,
-                    ),
-                    MyTextField(
-                      hint: "Número de casa / departamento",
-                      controller: cFlatNumber,
-                    ),
-                    MyTextField(
-                      hint: "Ciudad",
-                      controller: cCity,
-                    ),
-                    MyTextField(
-                      hint: "Estado",
-                      controller: cState,
-                    ),
-                    MyTextField(
-                      hint: "Código Postal",
-                      controller: cPinCode,
-                    ),
-                  ],
-                ),
-              ),*/ /*
-            ],
-          ),
-        ),*/
+        ),
       ),
     );
   }
 
-  Future<List<geocoder.Address>> searchandNavigate(
+  Future<List<googleCoding.GeocodingResult>> searchGoogleAddress(
       {@required String searchValue}) async {
-    List<geocoder.Address> addressesFound = await geocoder.Geocoder.google(
-            LocalMapsApi().googleApiKey,
-            language: "esp")
-        .findAddressesFromQuery(searchValue);
-    return addressesFound;
+    googleCoding.GeocodingResponse result = await ggcoding.geocoding
+        .get(searchValue, null, language: 'es', region: 'mx');
+    return result.results;
+  }
+
+  Future<List<Map>> searchandNavigate({@required String searchValue}) async {
+    googleCoding.GeocodingResponse result = await ggcoding.geocoding
+        .get(searchValue, null, language: 'es', region: 'mx');
+    //print({'result': result.results[0].formattedAddress});
+    List<Location> locationsFound = [];
+
+    try {
+      List<Location> newLocations = await locationFromAddress(searchValue);
+      locationsFound = newLocations;
+    } catch (err) {
+      print({
+        'err': err,
+      });
+    }
+
+    List<Map> listMapReturn = [];
+    if (locationsFound != null) {
+      for (Location locationLoop in locationsFound) {
+        /*print({
+          'locationLoop.lat': locationLoop.latitude,
+          'locationLoop.long': locationLoop.longitude
+        });*/
+        List<Placemark> listPlacemark = await placemarkFromCoordinates(
+            locationLoop.latitude, locationLoop.longitude);
+        Placemark placemark = listPlacemark[0];
+        /*print({'placemark': placemark, 'placemark.name': placemark.name});*/
+        listMapReturn.add({'location': locationLoop, 'placemark': placemark});
+      }
+    }
+
+    return listMapReturn;
     /*setState(() {
       _initialPositon = LatLng(addresses[0].coordinates.latitude,
           addresses[0].coordinates.longitude);
